@@ -22,7 +22,7 @@ int main(void){
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   
-  
+  printf("Hola mundo");
 
 
   MPI_Finalize();
