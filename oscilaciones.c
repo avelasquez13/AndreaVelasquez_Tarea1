@@ -9,7 +9,7 @@ int N = 1024;
 float B = 0.3, dt = 0.001;
 
 double *x_0(int n);
-double *acceleration(int n);
+double *acceleration(int n, double *x);
 
 int main(void){
  
