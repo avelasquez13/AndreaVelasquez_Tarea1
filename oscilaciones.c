@@ -10,6 +10,7 @@ float B = 0.3, dt = 0.001;
 
 double *x_0(int n);
 double *acceleration(int n, double *x);
+//double leapfrog();
 
 int main(void){
  
@@ -22,7 +23,7 @@ int main(void){
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   
-  printf("Hola mundo");
+
 
 
   MPI_Finalize();
