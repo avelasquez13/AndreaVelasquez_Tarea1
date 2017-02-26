@@ -34,7 +34,14 @@ int main(void){
 
 double *x_0(int n){
 
-  return sin(2*PI*n/(N-1));
+  double *x0;
+  x0 = malloc(N*sizeof(double));
+
+  for(n=0; n<N; n++){
+    x0[n] = sin(2*PI*n/(N-1));
+  }
+
+  return x0;
 
 }
 
@@ -42,6 +49,13 @@ double *x_0(int n){
 
 double *acceleration(int n, double *x){
 
-  return (x[n+1]-2*x[n]+x[n-1]) + B*(pow((x[n+1]-x[n]), 3)-pow((x[n]-x[n-1]), 3));
+  double *xpp;
+  xpp = malloc(N*sizeof(double));
+
+  for(n=0; n<N; n++){
+    xpp[n] = (x[n+1]-2*x[n]+x[n-1]) + B*(pow((x[n+1]-x[n]), 3)-pow((x[n]-x[n-1]), 3));
+  }
+
+  return xpp;
 
 }
