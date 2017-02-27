@@ -20,8 +20,6 @@ int main(void){
   MPI_Init(NULL, NULL);
 
   int world_size, rank, source, destination;
-  //MPI_Request request[4];
-  //MPI_Status status[4];
 
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -98,6 +96,7 @@ int main(void){
 	}
 	
 	MPI_Barrier( MPI_COMM_WORLD );
+	
 	//imprime x en t=0
 	for(j=0;j<world_size;j++)
 	{
@@ -153,7 +152,7 @@ int main(void){
 	
 	if(i%100==0){
 		MPI_Barrier( MPI_COMM_WORLD );
-	
+		
 		//imprime x en t=i
 		for(j=0;j<world_size;j++)
 		{
@@ -184,7 +183,7 @@ int main(void){
 		  }
 		  	MPI_Barrier( MPI_COMM_WORLD );
 		 } 
-	}
+		}
 		
 	}
 
@@ -215,6 +214,7 @@ double acceleration(int n, double *x){
 
 }
 
+
 double *lf_x(double *xi_1, double *v){
 
 	double *xi;
@@ -225,7 +225,9 @@ double *lf_x(double *xi_1, double *v){
 		xi[n]=xi_1[n]+v[n]*dt;
 	}
 	return xi;
+	
 }
+
 
 double *lf_v(double *xi, double *v){
 
@@ -237,5 +239,6 @@ double *lf_v(double *xi, double *v){
 		vi12[n]=v[n]+acceleration(n, xi)*dt;
 	}
 	return vi12;
+	
 }
 

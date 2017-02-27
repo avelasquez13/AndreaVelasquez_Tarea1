@@ -1,23 +1,20 @@
-EXECS=oscilaciones
-MPICC?=mpicc
+#para correr en un nodo local 
 
-all: ${EXECS}
-
-
-placas : oscilaciones.c
-	${MPICC} -o oscilaciones -lm oscilaciones.c
+grafica.pdf : valores.dat
+	python plot.py
 
 #valores.dat : oscilaciones
 #	qsub submit_job.sh
 
-plot :
-	cp oscilaciones.o* valores.dat
-	python plot.py
+
+valores.dat : oscilaciones
+	mpiexec -n 4 ./oscilaciones
+
+oscilaciones : oscilaciones.c
+	mpicc -o oscilaciones oscilaciones.c -lm
 
 
 clean :
 	rm oscilaciones
 	rm valores.dat
-	rm oscilaciones.o*
-	rm oscilaciones.e*
 
