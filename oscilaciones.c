@@ -73,7 +73,7 @@ int main(void){
 	
 	for(n=1; n<N-1; n++)
 	{
-		v[0][n]=acceleration(n, x[0])*dt;
+		v[0][n]=acceleration(n, x[0])*dt/2;
 	}
 	if(rank==0){
 		v[0][0]=0;
