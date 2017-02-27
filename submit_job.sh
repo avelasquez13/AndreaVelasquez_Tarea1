@@ -1,6 +1,6 @@
 #PBS -N oscilaciones
 #PBS -l nodes=1:ppn=4
-#PBS -M a.velasquez12@unandes.edu.co
+#PBS -M a.velasquez12@uniandes.edu.co
 #PBS -m abe
 
 module load rocks-openmpi_ib
