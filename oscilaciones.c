@@ -28,7 +28,7 @@ int main(void){
   
   //crea el archivo de salida
   if(rank==0){
-    out = fopen("file.dat", "w");
+    out = fopen("valores.dat", "w");
     fclose(out);
   }
   MPI_Barrier( MPI_COMM_WORLD );
