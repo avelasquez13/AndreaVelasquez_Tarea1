@@ -8,6 +8,7 @@
 
 int N, I=100*Ng, n, i, j;
 float B = 0.3, dt = 0.001;
+
 double x_0(int n);
 double acceleration(int n, double *x);
 double *lf_x(double *xi_1, double *v);
