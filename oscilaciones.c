@@ -15,28 +15,29 @@ double *lf_v(double *xi, double *v);
 
 
 int main(void){
+	
 
 	FILE *out;
-  MPI_Init(NULL, NULL);
+	MPI_Init(NULL, NULL);
 
-  int world_size, rank, source, destination;
+	int world_size, rank, source, destination;
 
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+  	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   
-  //crea el archivo de salida
-  if(rank==0){
-    out = fopen("valores.dat", "w");
-    fclose(out);
-  }
-  MPI_Barrier( MPI_COMM_WORLD );
+  	//crea el archivo de salida
+  	if(rank==0){
+    		out = fopen("valores.dat", "w");
+    		fclose(out);
+ 	}
+ 	MPI_Barrier( MPI_COMM_WORLD );
   
-  if(rank==0||rank==world_size-1){
-  	N=Ng/world_size+1;
-  }
-  else{
-  	N=Ng/world_size+2;
-  }
+  	if(rank==0||rank==world_size-1){
+  		N=Ng/world_size+1;
+  	}
+  	else{
+  		N=Ng/world_size+2;
+  	}	
   
    
 	//crea las matrices
@@ -82,17 +83,17 @@ int main(void){
 	
 	if(rank==0){
 		MPI_Send(&v[0][N-2], 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
-    MPI_Recv(&v[0][N-1], 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    		MPI_Recv(&v[0][N-1], 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 	else if(rank==world_size-1){
-	  MPI_Recv(&v[0][0], 1, MPI_DOUBLE, world_size-2, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Send(&v[0][1], 1, MPI_DOUBLE, world_size-2, 0, MPI_COMM_WORLD);
+	  	MPI_Recv(&v[0][0], 1, MPI_DOUBLE, world_size-2, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    		MPI_Send(&v[0][1], 1, MPI_DOUBLE, world_size-2, 0, MPI_COMM_WORLD);
 	}
 	else{
-	  MPI_Send(&v[0][N-2], 1, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD);
-	  MPI_Recv(&v[0][0], 1, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Send(&v[0][1], 1, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD);
-    MPI_Recv(&v[0][N-1], 1, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	  	MPI_Send(&v[0][N-2], 1, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD);
+	  	MPI_Recv(&v[0][0], 1, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    		MPI_Send(&v[0][1], 1, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD);
+    		MPI_Recv(&v[0][N-1], 1, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 	
 	MPI_Barrier( MPI_COMM_WORLD );
@@ -104,7 +105,7 @@ int main(void){
 	    out = fopen("valores.dat", "a");
 	    for(n=0;n<N-1;n++)
 	    {
-				fprintf(out, "%.20f ", x[0][n]);
+		fprintf(out, "%.20f ", x[0][n]);
 	    }
 	    fclose(out);
 	  }
@@ -112,7 +113,7 @@ int main(void){
 	    out = fopen("valores.dat", "a");
 	    for(n=1;n<N;n++)
 	    {
-				fprintf(out, "%.20f ", x[0][n]);
+		fprintf(out, "%.20f ", x[0][n]);
 	    }
 	    fprintf(out, " \n");
 	    fclose(out);
@@ -121,7 +122,7 @@ int main(void){
 	    out = fopen("valores.dat", "a");
 	    for(n=1;n<N-1;n++)
 	    {
-				fprintf(out, "%.20f ", x[0][n]);
+		fprintf(out, "%.20f ", x[0][n]);
 	    }
 	    fclose(out);
 	  }
@@ -136,22 +137,22 @@ int main(void){
 		v[i]=lf_v(x[i], v[i-1]);
 		
 		if(rank==0){
-		MPI_Send(&v[i][N-2], 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
-    MPI_Recv(&v[i][N-1], 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	}
-	else if(rank==world_size-1){
-	  MPI_Recv(&v[i][0], 1, MPI_DOUBLE, world_size-2, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Send(&v[i][1], 1, MPI_DOUBLE, world_size-2, 0, MPI_COMM_WORLD);
-	}
-	else{
-	  MPI_Send(&v[i][N-2], 1, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD);
-	  MPI_Recv(&v[i][0], 1, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Send(&v[i][1], 1, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD);
-    MPI_Recv(&v[i][N-1], 1, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	}
+			MPI_Send(&v[i][N-2], 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
+    			MPI_Recv(&v[i][N-1], 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		}
+		else if(rank==world_size-1){
+	  		MPI_Recv(&v[i][0], 1, MPI_DOUBLE, world_size-2, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+   			MPI_Send(&v[i][1], 1, MPI_DOUBLE, world_size-2, 0, MPI_COMM_WORLD);
+		}
+		else{
+	  		MPI_Send(&v[i][N-2], 1, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD);
+	  		MPI_Recv(&v[i][0], 1, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    			MPI_Send(&v[i][1], 1, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD);
+    			MPI_Recv(&v[i][N-1], 1, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		}
 	
-	if(i%100==0){
-		MPI_Barrier( MPI_COMM_WORLD );
+		if(i%100==0){
+			MPI_Barrier( MPI_COMM_WORLD );
 		
 		//imprime x en t=i
 		for(j=0;j<world_size;j++)
@@ -160,7 +161,7 @@ int main(void){
 		    out = fopen("valores.dat", "a");
 		    for(n=0;n<N-1;n++)
 		    {
-					fprintf(out, "%.20f ", x[i][n]);
+				fprintf(out, "%.20f ", x[i][n]);
 		    }
 		    fclose(out);
 		  }
@@ -168,7 +169,7 @@ int main(void){
 		    out = fopen("valores.dat", "a");
 		    for(n=1;n<N;n++)
 		    {
-					fprintf(out, "%.20f ", x[i][n]);
+				fprintf(out, "%.20f ", x[i][n]);
 		    }
 		    fprintf(out, "\n");
 		    fclose(out);
@@ -177,11 +178,11 @@ int main(void){
 		    out = fopen("valores.dat", "a");
 		    for(n=1;n<N-1;n++)
 		    {
-					fprintf(out, "%.20f ", x[i][n]);
+				fprintf(out, "%.20f ", x[i][n]);
 		    }
 		    fclose(out);
 		  }
-		  	MPI_Barrier( MPI_COMM_WORLD );
+		  MPI_Barrier( MPI_COMM_WORLD );
 		 } 
 		}
 		
