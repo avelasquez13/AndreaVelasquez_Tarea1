@@ -4,29 +4,36 @@
 #include "omp.h"
 
 #define PI 3.14159265
-#define N 1024
+#define N 64
 
 int n, i, j;
-float B = 0.3, dt = 0.001;
-//TODO volver a poner 2.2
+float B = 1.0, dt = 0.05;
+//TODO cambiar dt
 
 
 double x_0(int n);
 double acceleration(int n, double *x);
 double *lf_x(double *xi_1, double *v);
 double *lf_v(double *xi, double *v);
+double Ek(double *x, double *v, int k); 
 
-
-int main(void){
+int main(int argc, char *argv[]){
 	
-	int I=100*N;
+	int I=5*pow(N,2.2)/dt;
+	
+	int num = atoi(argv[1]);
+	omp_set_num_threads(num);
 	
 	FILE *out;
 
-  //crea el archivo de salida
+  //crea el archivo de salida xs contra t
   out = fopen("valores.dat", "w");
   fclose(out); 
-   
+  
+    //crea el archivo de salida energias
+  out = fopen("energias.dat", "w");
+  fclose(out); 
+  
 	//crea la matriz
 	double **v;
 	v=(double**) malloc(I*sizeof(double*));
@@ -41,6 +48,14 @@ int main(void){
 	{
 		x[i]=(double*) malloc(N*sizeof(double));
 	}
+	
+	//crea vectores de energia en los 3 modos
+	double *E1;
+	E1= (double*) malloc(1000*sizeof(double));
+	double *E2;
+	E2= (double*) malloc(1000*sizeof(double));
+	double *E3;
+	E3= (double*) malloc(1000*sizeof(double));
 	
 	//inicializa la matriz con las condiciones iniciales
 
@@ -67,8 +82,11 @@ int main(void){
 	}
 	fprintf(out,"\n");
 	fclose(out);
-
-	  
+	
+	//calcula las energias en t=0
+	 E1[0]=Ek(x[0],v[0],1);
+	 E2[0]=Ek(x[0],v[0],2);
+	 E3[0]=Ek(x[0],v[0],3);
 			
 	//itera a traves del tiempo
 	for(i=1; i<I; i++)
@@ -76,7 +94,7 @@ int main(void){
 		x[i]=lf_x(x[i-1], v[i-1]);
 		v[i]=lf_v(x[i], v[i-1]);
 		
-		if(i%100==0){
+		if(i%(I/1000)==0){
 		
 			//imprime x en t=i
 			out = fopen("valores.dat", "a");
@@ -86,25 +104,51 @@ int main(void){
 			}
 			fprintf(out,"\n");
 			fclose(out);
-		} 	
+			
+			//calcula las energias en t=i
+	 		E1[i]=Ek(x[i],v[i],1);
+	 		E2[i]=Ek(x[i],v[i],2);
+	 		E3[i]=Ek(x[i],v[i],3);
+	 		printf("%f\n",E1[i]);
+			
+		}
+		 	
 	}
+	
+	//imprime energias
+	out = fopen("energias.dat", "a");
+  for(i=0;i<1000;i++)
+	{
+		fprintf(out, "%.20f ", E1[i]);
+	}
+	fprintf(out,"\n");
+	
+  for(i=0;i<1000;i++)
+	{
+		fprintf(out, "%.20f ", E2[i]);
+	}
+	fprintf(out,"\n");
+	
+  for(i=0;i<1000;i++)
+	{
+		fprintf(out, "%.20f ", E3[i]);
+	}
+	fprintf(out,"\n");
+	fclose(out);
 
   return 0;
 
 }
 
 
-
 double x_0(int n){
 
   double x0;
-  x0= sin(2*PI*n/(N-1));
+  x0= sin(PI*n/(N-1));
 
   return x0;
 
 }
-
-
 
 double acceleration(int n, double *x){
 
@@ -115,31 +159,48 @@ double acceleration(int n, double *x){
 
 }
 
-
 double *lf_x(double *xi_1, double *v){
 
 	double *xi;
   xi = malloc(N*sizeof(double));
   
+  #pragma omp parallel for
 	for(n=0; n<N; n++)
 	{
 		xi[n]=xi_1[n]+v[n]*dt;
 	}
 	return xi;
-	
-}
 
+}
 
 double *lf_v(double *xi, double *v){
 
 	double *vi12;
   vi12 = malloc(N*sizeof(double));
   
+  #pragma omp parallel for
 	for(n=1; n<N-1; n++)
 	{
 		vi12[n]=v[n]+acceleration(n, xi)*dt;
 	}
 	return vi12;
+	
+}
+
+double Ek(double *x, double *v, int k){
+
+	double Qk=0;
+	double Qkp=0;
+	double wk2 = 4*pow(sin(k*PI/(2*N+2)), 2);
+	
+	for (n=0; n<N; n++){
+	 	 Qk+=x[n]*sin(n*k*PI/(N+1));
+	 	 Qkp+=v[n]*sin(n*k*PI/(N+1));
+	}
+	Qk = Qk*pow(2.0/(N+1), 0.5);
+	Qkp = Qkp*pow(2.0/(N+1), 0.5);
+	
+	return 0.5*(pow(Qkp,2) + wk2*pow(Qk, 2));
 	
 }
 
