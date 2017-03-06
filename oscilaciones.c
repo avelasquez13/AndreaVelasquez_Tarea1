@@ -18,6 +18,7 @@ double Ek(double *x, double *v, int k);
 
 int main(int argc, char *argv[]){
 	
+        double tiempo0 = omp_get_wtime();
 	int I=5*pow(N,2.2)/dt;
 	int d=1;
 	int num = atoi(argv[1]);
@@ -25,17 +26,22 @@ int main(int argc, char *argv[]){
 	
 	FILE *out;
 
-  //crea el archivo de salida xs contra t
-  out = fopen("valores.dat", "w");
-  fclose(out); 
+	//crea el archivo de salida de xs contra t
+	out = fopen("valores.dat", "w");
+	fclose(out); 
   
-    //crea el archivo de salida energias
-  out = fopen("energias.dat", "w");
-  fclose(out); 
+	//crea el archivo de salida de energias
+	out = fopen("energias.dat", "w");
+	fclose(out); 
+
+	//crea el archivo de salida de tiempos
+	out = fopen("tiempos.dat", "a");
+	fclose(out); 
   
-	//crea la matriz
+	//crea las matrices
 	double **v;
 	v=(double**) malloc(I*sizeof(double*));
+
 	for(i=0; i<I; i++)
 	{
 		v[i]=(double*) malloc(N*sizeof(double));
@@ -43,6 +49,7 @@ int main(int argc, char *argv[]){
 	
 	double **x;
 	x=(double**) malloc(I*sizeof(double*));
+
 	for(i=0; i<I; i++)
 	{
 		x[i]=(double*) malloc(N*sizeof(double));
@@ -58,7 +65,6 @@ int main(int argc, char *argv[]){
 
 	
 	//inicializa la matriz con las condiciones iniciales
-
 	for(n=0; n<N; n++)
 	{
 		x[0][n]=x_0(n);
@@ -76,7 +82,7 @@ int main(int argc, char *argv[]){
 	
 	//imprime x en t=0
 	out = fopen("valores.dat", "a");
-  for(n=0;n<N;n++)
+	for(n=0;n<N;n++)
 	{
 		fprintf(out, "%.20f ", x[0][n]);
 	}
@@ -84,9 +90,9 @@ int main(int argc, char *argv[]){
 	fclose(out);
 	
 	//calcula las energias en t=0
-	 E1[0]=Ek(x[0],v[0],1);
-	 E2[0]=Ek(x[0],v[0],2);
-	 E3[0]=Ek(x[0],v[0],3);
+	E1[0]=Ek(x[0],v[0],1);
+	E2[0]=Ek(x[0],v[0],2);
+	E3[0]=Ek(x[0],v[0],3);
 			
 	//itera a traves del tiempo
 	for(i=1; i<I; i++)
@@ -96,8 +102,7 @@ int main(int argc, char *argv[]){
 		
 		if(i%(I/1000)==0){
 		
-						
-			//calcula las energias en t=i
+	       		//calcula las energias en t=i
 	 		E1[d]=Ek(x[i],v[i],1);
 	 		E2[d]=Ek(x[i],v[i],2);
 	 		E3[d]=Ek(x[i],v[i],3);
@@ -105,40 +110,44 @@ int main(int argc, char *argv[]){
 
 			//imprime x en t=i
 			out = fopen("valores.dat", "a");
-  		for(n=0;n<N;n++)
+			for(n=0;n<N;n++)
 			{
 				fprintf(out, "%.20f ", x[i][n]);
 			}
 			fprintf(out,"\n");
 			fclose(out);
-
-			
+	
 		}
-		 	
-	}
+       	}
 
 	//imprime energias
 	out = fopen("energias.dat", "a");
-  for(i=0;i<1000;i++)
+	for(i=0;i<1000;i++)
 	{
 		fprintf(out, "%.20f ", E1[i]);
 	}
 	fprintf(out,"\n");
 	
-  for(i=0;i<1000;i++)
+	for(i=0;i<1000;i++)
 	{
 		fprintf(out, "%.20f ", E2[i]);
 	}
 	fprintf(out,"\n");
 	
-  for(i=0;i<1000;i++)
+	for(i=0;i<1000;i++)
 	{
 		fprintf(out, "%.20f ", E3[i]);
 	}
 	fprintf(out,"\n");
 	fclose(out);
 
-  return 0;
+	//imprime los tiempos
+	double tiempo = omp_get_wtime() - tiempo0;
+	out = fopen("tiempos.dat", "a");
+	fprintf(out, "%.20f ", tiempo);
+	
+
+	return 0;
 
 }
 
@@ -146,11 +155,12 @@ int main(int argc, char *argv[]){
 double x_0(int n){
 
   double x0;
-  x0= sin(PI*n/(N-1));
+  x0 = sin(PI*n/(N-1));
 
   return x0;
 
 }
+
 
 double acceleration(int n, double *x){
 
@@ -160,6 +170,7 @@ double acceleration(int n, double *x){
   return xpp;
 
 }
+
 
 double *lf_x(double *xi_1, double *v){
 
@@ -175,6 +186,7 @@ double *lf_x(double *xi_1, double *v){
 
 }
 
+
 double *lf_v(double *xi, double *v){
 
 	double *vi12;
@@ -189,13 +201,15 @@ double *lf_v(double *xi, double *v){
 	
 }
 
+
 double Ek(double *x, double *v, int k){
 
 	double Qk=0;
 	double Qkp=0;
 	double wk2 = 4*pow(sin(k*PI/(2*N+2)), 2);
 	
-	for (n=0; n<N; n++){
+	for (n=0; n<N; n++)
+	{
 	 	 Qk+=x[n]*sin(n*k*PI/(N+1));
 	 	 Qkp+=v[n]*sin(n*k*PI/(N+1));
 	}
@@ -205,4 +219,3 @@ double Ek(double *x, double *v, int k){
 	return 0.5*(pow(Qkp,2) + wk2*pow(Qk, 2));
 	
 }
-

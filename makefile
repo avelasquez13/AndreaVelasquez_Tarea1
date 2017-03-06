@@ -1,20 +1,15 @@
-#para correr en un nodo local 
-
-grafica.pdf energias.pdf: valores.dat
+tiempos.pdf energias.pdf: valores.dat energias.dat
 	python plot.py
-
-#valores.dat : oscilaciones
-#	qsub submit_job.sh
-
+	python tiempos.py
 
 valores.dat : oscilaciones
+	./oscilaciones 1
+	./oscilaciones 2
 	./oscilaciones 4
 
 oscilaciones : oscilaciones.c
-	gcc -fopenmp  -o oscilaciones oscilaciones.c -lm
-
+	gcc -fopenmp -o oscilaciones oscilaciones.c -lm
 
 clean :
 	rm oscilaciones
 	rm valores.dat
-
