@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <mpi.h>
+#include "omp.h"
 
 #define PI 3.14159265
-#define Ng 1024
+#define N 1024
 
-int N, I=100*Ng, n, i, j;
+int n, i, j;
 float B = 0.3, dt = 0.001;
+//TODO volver a poner 2.2
+
 
 double x_0(int n);
 double acceleration(int n, double *x);
@@ -17,31 +19,15 @@ double *lf_v(double *xi, double *v);
 
 int main(void){
 	
-
+	int I=100*N;
+	
 	FILE *out;
-	MPI_Init(NULL, NULL);
 
-	int world_size, rank, source, destination;
-
-  	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-  	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  
-  	//crea el archivo de salida
-  	if(rank==0){
-    		out = fopen("valores.dat", "w");
-    		fclose(out);
- 	}
- 	MPI_Barrier( MPI_COMM_WORLD );
-  
-  	if(rank==0||rank==world_size-1){
-  		N=Ng/world_size+1;
-  	}
-  	else{
-  		N=Ng/world_size+2;
-  	}	
-  
+  //crea el archivo de salida
+  out = fopen("valores.dat", "w");
+  fclose(out); 
    
-	//crea las matrices
+	//crea la matriz
 	double **v;
 	v=(double**) malloc(I*sizeof(double*));
 	for(i=0; i<I; i++)
@@ -56,80 +42,33 @@ int main(void){
 		x[i]=(double*) malloc(N*sizeof(double));
 	}
 	
-	//inicializa las matrices con las condiciones iniciales
-	if(rank==0){
-		for(n=0; n<N; n++)
-		{
-			x[0][n]=x_0(n);
-		}
-	}
-	else{
-		for(n=0; n<N; n++)
-		{
-			x[0][n]=x_0(n+rank*Ng/world_size-1);
-		}
+	//inicializa la matriz con las condiciones iniciales
+
+	for(n=0; n<N; n++)
+	{
+		x[0][n]=x_0(n);
 	}
 	
+	//kick
 	for(n=1; n<N-1; n++)
 	{
 		v[0][n]=acceleration(n, x[0])*dt/2;
 	}
-	if(rank==0){
-		v[0][0]=0;
-	}
-	else if(rank==world_size-1){
-		v[0][N-1]=0;
-	}
-	MPI_Barrier( MPI_COMM_WORLD );
 	
-	if(rank==0){
-		MPI_Send(&v[0][N-2], 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
-    		MPI_Recv(&v[0][N-1], 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	}
-	else if(rank==world_size-1){
-	  	MPI_Recv(&v[0][0], 1, MPI_DOUBLE, world_size-2, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    		MPI_Send(&v[0][1], 1, MPI_DOUBLE, world_size-2, 0, MPI_COMM_WORLD);
-	}
-	else{
-	  	MPI_Send(&v[0][N-2], 1, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD);
-	  	MPI_Recv(&v[0][0], 1, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    		MPI_Send(&v[0][1], 1, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD);
-    		MPI_Recv(&v[0][N-1], 1, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	}
-	
-	MPI_Barrier( MPI_COMM_WORLD );
+	//condiciones de frontera
+	v[0][0]=0;
+	v[0][N-1]=0;
 	
 	//imprime x en t=0
-	for(j=0;j<world_size;j++)
+	out = fopen("valores.dat", "a");
+  for(n=0;n<N;n++)
 	{
-	  if(j==rank&&j==0){
-	    out = fopen("valores.dat", "a");
-	    for(n=0;n<N-1;n++)
-	    {
 		fprintf(out, "%.20f ", x[0][n]);
-	    }
-	    fclose(out);
-	  }
-	  else if(j==rank&&j==world_size-1){
-	    out = fopen("valores.dat", "a");
-	    for(n=1;n<N;n++)
-	    {
-		fprintf(out, "%.20f ", x[0][n]);
-	    }
-	    fprintf(out, " \n");
-	    fclose(out);
-	  }
-	  else if(j==rank){
-	    out = fopen("valores.dat", "a");
-	    for(n=1;n<N-1;n++)
-	    {
-		fprintf(out, "%.20f ", x[0][n]);
-	    }
-	    fclose(out);
-	  }
-	  	MPI_Barrier( MPI_COMM_WORLD );
 	}
+	fprintf(out,"\n");
+	fclose(out);
 
+	  
 			
 	//itera a traves del tiempo
 	for(i=1; i<I; i++)
@@ -137,59 +76,19 @@ int main(void){
 		x[i]=lf_x(x[i-1], v[i-1]);
 		v[i]=lf_v(x[i], v[i-1]);
 		
-		if(rank==0){
-			MPI_Send(&v[i][N-2], 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
-    			MPI_Recv(&v[i][N-1], 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-		}
-		else if(rank==world_size-1){
-	  		MPI_Recv(&v[i][0], 1, MPI_DOUBLE, world_size-2, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-   			MPI_Send(&v[i][1], 1, MPI_DOUBLE, world_size-2, 0, MPI_COMM_WORLD);
-		}
-		else{
-	  		MPI_Send(&v[i][N-2], 1, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD);
-	  		MPI_Recv(&v[i][0], 1, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    			MPI_Send(&v[i][1], 1, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD);
-    			MPI_Recv(&v[i][N-1], 1, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-		}
-	
 		if(i%100==0){
-			MPI_Barrier( MPI_COMM_WORLD );
 		
-		//imprime x en t=i
-		for(j=0;j<world_size;j++)
-		{
-		  if(j==rank&&j==0){
-		    out = fopen("valores.dat", "a");
-		    for(n=0;n<N-1;n++)
-		    {
+			//imprime x en t=i
+			out = fopen("valores.dat", "a");
+  		for(n=0;n<N;n++)
+			{
 				fprintf(out, "%.20f ", x[i][n]);
-		    }
-		    fclose(out);
-		  }
-		  else if(j==rank&&j==world_size-1){
-		    out = fopen("valores.dat", "a");
-		    for(n=1;n<N;n++)
-		    {
-				fprintf(out, "%.20f ", x[i][n]);
-		    }
-		    fprintf(out, "\n");
-		    fclose(out);
-		  }
-		  else if(j==rank){
-		    out = fopen("valores.dat", "a");
-		    for(n=1;n<N-1;n++)
-		    {
-				fprintf(out, "%.20f ", x[i][n]);
-		    }
-		    fclose(out);
-		  }
-		  MPI_Barrier( MPI_COMM_WORLD );
-		 } 
-		}
-		
+			}
+			fprintf(out,"\n");
+			fclose(out);
+		} 	
 	}
 
-  MPI_Finalize();
   return 0;
 
 }
@@ -199,7 +98,7 @@ int main(void){
 double x_0(int n){
 
   double x0;
-  x0= sin(2*PI*n/(Ng-1));
+  x0= sin(2*PI*n/(N-1));
 
   return x0;
 
