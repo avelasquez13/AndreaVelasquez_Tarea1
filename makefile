@@ -12,4 +12,6 @@ oscilaciones : oscilaciones.c
 
 clean :
 	rm oscilaciones
+	rm energias.dat
+	rm tiempos.dat
 	rm valores.dat
