@@ -6,21 +6,20 @@
 #define PI 3.14159265
 #define N 64
 
-int n, i, j;
-float B = 1.0, dt = 0.05;
-//TODO cambiar dt
-
+int n, i, j, d;
+float B = 1.0, dt = 0.005;
 
 double x_0(int n);
 double acceleration(int n, double *x);
 double *lf_x(double *xi_1, double *v);
 double *lf_v(double *xi, double *v);
-double Ek(double *x, double *v, int k); 
+double Ek(double *x, double *v, int k);
+
 
 int main(int argc, char *argv[]){
 	
 	int I=5*pow(N,2.2)/dt;
-	
+	int d=1;
 	int num = atoi(argv[1]);
 	omp_set_num_threads(num);
 	
@@ -56,6 +55,7 @@ int main(int argc, char *argv[]){
 	E2= (double*) malloc(1000*sizeof(double));
 	double *E3;
 	E3= (double*) malloc(1000*sizeof(double));
+
 	
 	//inicializa la matriz con las condiciones iniciales
 
@@ -96,6 +96,13 @@ int main(int argc, char *argv[]){
 		
 		if(i%(I/1000)==0){
 		
+						
+			//calcula las energias en t=i
+	 		E1[d]=Ek(x[i],v[i],1);
+	 		E2[d]=Ek(x[i],v[i],2);
+	 		E3[d]=Ek(x[i],v[i],3);
+	 		d++;
+
 			//imprime x en t=i
 			out = fopen("valores.dat", "a");
   		for(n=0;n<N;n++)
@@ -104,17 +111,12 @@ int main(int argc, char *argv[]){
 			}
 			fprintf(out,"\n");
 			fclose(out);
-			
-			//calcula las energias en t=i
-	 		E1[i]=Ek(x[i],v[i],1);
-	 		E2[i]=Ek(x[i],v[i],2);
-	 		E3[i]=Ek(x[i],v[i],3);
-	 		printf("%f\n",E1[i]);
+
 			
 		}
 		 	
 	}
-	
+
 	//imprime energias
 	out = fopen("energias.dat", "a");
   for(i=0;i<1000;i++)
