@@ -1,8 +1,8 @@
-tiempos.pdf energias.pdf: valores.dat energias.dat
+tiempos.pdf energias.pdf: tiempos.dat energias.dat
 	python plot.py
 	python tiempos.py
 
-valores.dat : oscilaciones
+tiempos.dat energias.dat : oscilaciones
 	./oscilaciones 1
 	./oscilaciones 2
 	./oscilaciones 4
@@ -14,4 +14,3 @@ clean :
 	rm oscilaciones
 	rm energias.dat
 	rm tiempos.dat
-	rm valores.dat
