@@ -1,6 +1,6 @@
 #para correr en un nodo local 
 
-grafica.pdf : valores.dat
+grafica.pdf energias.pdf: valores.dat
 	python plot.py
 
 #valores.dat : oscilaciones
@@ -8,10 +8,10 @@ grafica.pdf : valores.dat
 
 
 valores.dat : oscilaciones
-	mpiexec -n 4 ./oscilaciones
+	./oscilaciones 4
 
 oscilaciones : oscilaciones.c
-	mpicc -o oscilaciones oscilaciones.c -lm
+	gcc -fopenmp  -o oscilaciones oscilaciones.c -lm
 
 
 clean :
