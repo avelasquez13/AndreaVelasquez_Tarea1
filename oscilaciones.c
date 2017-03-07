@@ -26,10 +26,6 @@ int main(int argc, char *argv[]){
 	
 	FILE *out;
 
-	//crea el archivo de salida de xs contra t
-	out = fopen("valores.dat", "w");
-	fclose(out); 
-  
 	//crea el archivo de salida de energias
 	out = fopen("energias.dat", "w");
 	fclose(out); 
@@ -80,15 +76,6 @@ int main(int argc, char *argv[]){
 	v[0][0]=0;
 	v[0][N-1]=0;
 	
-	//imprime x en t=0
-	out = fopen("valores.dat", "a");
-	for(n=0;n<N;n++)
-	{
-		fprintf(out, "%.20f ", x[0][n]);
-	}
-	fprintf(out,"\n");
-	fclose(out);
-	
 	//calcula las energias en t=0
 	E1[0]=Ek(x[0],v[0],1);
 	E2[0]=Ek(x[0],v[0],2);
@@ -107,15 +94,6 @@ int main(int argc, char *argv[]){
 	 		E2[d]=Ek(x[i],v[i],2);
 	 		E3[d]=Ek(x[i],v[i],3);
 	 		d++;
-
-			//imprime x en t=i
-			out = fopen("valores.dat", "a");
-			for(n=0;n<N;n++)
-			{
-				fprintf(out, "%.20f ", x[i][n]);
-			}
-			fprintf(out,"\n");
-			fclose(out);
 	
 		}
        	}
@@ -164,10 +142,10 @@ double x_0(int n){
 
 double acceleration(int n, double *x){
 
-  double xpp;
+        double xpp;
 	xpp = (x[n+1]-2*x[n]+x[n-1]) + B*(pow((x[n+1]-x[n]), 3)-pow((x[n]-x[n-1]), 3));
 	
-  return xpp;
+	return xpp;
 
 }
 
@@ -175,9 +153,9 @@ double acceleration(int n, double *x){
 double *lf_x(double *xi_1, double *v){
 
 	double *xi;
-  xi = malloc(N*sizeof(double));
+	xi = malloc(N*sizeof(double));
   
-  #pragma omp parallel for
+        #pragma omp parallel for
 	for(n=0; n<N; n++)
 	{
 		xi[n]=xi_1[n]+v[n]*dt;
@@ -191,9 +169,9 @@ double *lf_x(double *xi_1, double *v){
 double *lf_v(double *xi, double *v){
 
 	double *vi12;
-  vi12 = malloc(N*sizeof(double));
+	vi12 = malloc(N*sizeof(double));
   
-  #pragma omp parallel for
+        #pragma omp parallel for
 	for(n=1; n<N-1; n++)
 	{
 		vi12[n]=v[n]+acceleration(n, xi)*dt;
@@ -212,11 +190,11 @@ double Ek(double *x, double *v, int k){
 	
 	for (n=0; n<N; n++)
 	{
-	 	 Qk+=x[n]*sin(n*k*PI/(N));
-	 	 Qkp+=v[n]*sin(n*k*PI/(N));
+	 	 Qk+=x[n]*sin(n*k*PI/N);
+	 	 Qkp+=v[n]*sin(n*k*PI/N);
 	}
-	Qk = Qk*pow(2.0/(N), 0.5);
-	Qkp = Qkp*pow(2.0/(N), 0.5);
+	Qk = Qk*pow(2.0/N, 0.5);
+	Qkp = Qkp*pow(2.0/N, 0.5);
 	
 	return 0.5*(pow(Qkp,2) + wk2*pow(Qk, 2));
 	
