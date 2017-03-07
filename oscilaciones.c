@@ -206,15 +206,15 @@ double Ek(double *x, double *v, int k){
 
 	double Qk=0;
 	double Qkp=0;
-	double wk2 = 4*pow(sin(k*PI/(2*N+2)), 2);
+	double wk2 = 4*pow(sin(k*PI/(2*N)), 2);
 	
 	for (n=0; n<N; n++)
 	{
-	 	 Qk+=x[n]*sin(n*k*PI/(N+1));
-	 	 Qkp+=v[n]*sin(n*k*PI/(N+1));
+	 	 Qk+=x[n]*sin(n*k*PI/(N));
+	 	 Qkp+=v[n]*sin(n*k*PI/(N));
 	}
-	Qk = Qk*pow(2.0/(N+1), 0.5);
-	Qkp = Qkp*pow(2.0/(N+1), 0.5);
+	Qk = Qk*pow(2.0/(N), 0.5);
+	Qkp = Qkp*pow(2.0/(N), 0.5);
 	
 	return 0.5*(pow(Qkp,2) + wk2*pow(Qk, 2));
 	
