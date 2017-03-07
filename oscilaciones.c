@@ -160,9 +160,9 @@ double *lf_x(double *xi_1, double *v){
 	{
 		xi[n]=xi_1[n]+v[n]*dt;
 	}
-	free(xi);
+	
 	return xi;
-
+	free(xi);
 }
 
 
@@ -176,9 +176,9 @@ double *lf_v(double *xi, double *v){
 	{
 		vi12[n]=v[n]+acceleration(n, xi)*dt;
 	}
-	free(vi12);
+
 	return vi12;
-	
+	free(vi12);
 }
 
 
