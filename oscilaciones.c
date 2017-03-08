@@ -143,7 +143,7 @@ double x_0(int n){
 double acceleration(int n, double *x){
 
         double xpp;
-	xpp = (x[n+1]-2*x[n]+x[n-1]) + B*(pow((x[n+1]-x[n]), 3)-pow((x[n]-x[n-1]), 3));
+	xpp = (x[n+1]-2*x[n]+x[n-1]) + B*(pow((x[n+1]-x[n]), 2)-pow((x[n]-x[n-1]), 2));
 	
 	return xpp;
 
