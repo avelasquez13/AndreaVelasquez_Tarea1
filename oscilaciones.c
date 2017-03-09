@@ -16,13 +16,14 @@ double *lf_v(double *xi, double *v);
 double Ek(double *x, double *v, int k);
 
 double *xi;
-xi = malloc(N*sizeof(double));
-
 double *vi12;
-vi12 = malloc(N*sizeof(double));
+
 	
 
 int main(int argc, char *argv[]){
+	
+	xi = malloc(N*sizeof(double));
+	vi12 = malloc(N*sizeof(double));
 	
         double tiempo0 = omp_get_wtime();
 	int I=5*pow(N,2.2)/dt;
