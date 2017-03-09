@@ -15,6 +15,12 @@ double *lf_x(double *xi_1, double *v);
 double *lf_v(double *xi, double *v);
 double Ek(double *x, double *v, int k);
 
+double *xi;
+xi = malloc(N*sizeof(double));
+
+double *vi12;
+vi12 = malloc(N*sizeof(double));
+	
 
 int main(int argc, char *argv[]){
 	
@@ -152,8 +158,6 @@ double acceleration(int n, double *x){
 
 double *lf_x(double *xi_1, double *v){
 
-	double *xi;
-	xi = malloc(N*sizeof(double));
   
         #pragma omp parallel for
 	for(n=0; n<N; n++)
@@ -168,8 +172,6 @@ double *lf_x(double *xi_1, double *v){
 
 double *lf_v(double *xi, double *v){
 
-	double *vi12;
-	vi12 = malloc(N*sizeof(double));
   
         #pragma omp parallel for
 	for(n=1; n<N-1; n++)
